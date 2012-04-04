@@ -10,5 +10,6 @@ extern unsigned char * const lcd;
 extern const unsigned char lcd_font[];
 
 void lcd_clear(void);
-void lcd_putchar(int i, char c);
-void lcd_putint(int line, int i);
+void lcd_putchar(uint8_t i, char c);
+void lcd_putdigit(uint8_t line, uint8_t d);
+void lcd_putint(uint8_t line, int i);
