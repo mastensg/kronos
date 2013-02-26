@@ -70,63 +70,62 @@ main(void) {
     __enable_interrupt();
 
     for(;;) {
-        uint8_t month, day, h, m, sun_h, sun_m;
-
         buttons = BUTTONS_IN;
 
         if(buttons & BUTTON_STAR) {
-            h = RTCDAY;
-            m = RTCMON;
+            uint8_t sun_h, sun_m;
+            uint16_t sun_i;
 
-            lcd[0] &= ~(1 << 5);
-            lcd[0] |= (1 << 6);
-        } else {
-            h = RTCHOUR;
-            m = RTCMIN;
+            lcd[4] |= (1 << 0);
 
-            lcd[0] &= ~(1 << 6);
-            lcd[0] |= (1 << 5);
-        }
-
-        lcd_putdigit(0, h / 10);
-        lcd_putdigit(1, h % 10);
-
-        lcd_putdigit(2, m / 10);
-        lcd_putdigit(3, m % 10);
-
-        month = RTCMON;
-        day = RTCDAY;
-
-        uint16_t sun_i = month * 32 + day;
-
-        if(buttons & BUTTON_NUM) {
-            lcd_putchar(4, 'U');
+            sun_i = RTCMON * 32 + RTCDAY;
 
             sun_h = sun_up_down[sun_i].uh;
             sun_m = sun_up_down[sun_i].um;
-        } else {
-            lcd_putchar(4, 'D');
+
+            lcd_putdigit(0, sun_h / 10);
+            lcd_putdigit(1, sun_h % 10);
+            lcd_putdigit(2, sun_m / 10);
+            lcd_putdigit(3, sun_m % 10);
 
             sun_h = sun_up_down[sun_i].dh;
             sun_m = sun_up_down[sun_i].dm;
+
+            lcd_putdigit(5, sun_h / 10);
+            lcd_putdigit(6, sun_h % 10);
+            lcd_putdigit(7, sun_m / 10);
+            lcd_putdigit(8, sun_m % 10);
+
+        } else {
+            lcd[0] &= ~(1 << 6);
+            lcd[0] |= (1 << 5);
+            lcd[4] &= ~(1 << 0);
+
+            lcd_putdigit(0, RTCHOUR / 10);
+            lcd_putdigit(1, RTCHOUR % 10);
+
+            lcd_putdigit(2, RTCMIN / 10);
+            lcd_putdigit(3, RTCMIN % 10);
+
+            lcd_putdigit(5, RTCDAY / 10);
+            lcd_putdigit(6, RTCDAY % 10);
+
+            lcd_putdigit(7, RTCMON / 10);
+            lcd_putdigit(8, RTCMON % 10);
         }
-
-        lcd_putdigit(5, sun_h / 10);
-        lcd_putdigit(6, sun_h % 10);
-
-        lcd_putdigit(7, sun_m / 10);
-        lcd_putdigit(8, sun_m % 10);
-
-        lcd[4] = (1 << 0);
 
         if((buttons & (BUTTON_STAR | BUTTON_NUM)) == 0)
             low_power_mode();
+
+        if(buttons & BUTTON_UP)
+            ++RTCMIN;
+
+        if(buttons & BUTTON_DOWN)
+            --RTCMIN;
     }
 
     return 0;
 }
-
-uint8_t b = 0;
 
 interrupt(PORT2_VECTOR) PORT2_ISR(void) {
     buttons = BUTTONS_IN;
